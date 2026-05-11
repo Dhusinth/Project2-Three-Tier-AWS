@@ -16,6 +16,8 @@ resource "aws_vpc_security_group_ingress_rule" "three-tier-internal-alb-ingress"
   to_port           = 80
 }
 
+
+
 resource "aws_vpc_security_group_egress_rule" "three-tier-internal-alb-ingress" {
   security_group_id = aws_security_group.three-tier-internet-alb.id
   cidr_ipv4         = "0.0.0.0/0"
@@ -40,6 +42,14 @@ resource "aws_vpc_security_group_ingress_rule" "three-tier-public-subnet-ingress
   to_port                      = 80
 }
 
+resource "aws_vpc_security_group_ingress_rule" "three-tier-public-subnet-ingress-ssh" {
+  security_group_id = aws_security_group.three-tier-public-subnet.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 22
+  ip_protocol       = "tcp"
+  to_port           = 22
+}
+
 resource "aws_vpc_security_group_egress_rule" "three-tier-public-subnet-egress" {
   security_group_id = aws_security_group.three-tier-public-subnet.id
   cidr_ipv4         = "0.0.0.0/0"
@@ -59,9 +69,9 @@ resource "aws_security_group" "three-tier-internal-alb" {
 resource "aws_vpc_security_group_ingress_rule" "three-tier-internet-alb-ingress" {
   security_group_id            = aws_security_group.three-tier-internal-alb.id
   referenced_security_group_id = aws_security_group.three-tier-public-subnet.id
-  from_port                    = 5000
+  from_port                    = 80
   ip_protocol                  = "tcp"
-  to_port                      = 5000
+  to_port                      = 80
 }
 
 resource "aws_vpc_security_group_egress_rule" "three-tier-internet-alb-egress" {
@@ -87,6 +97,15 @@ resource "aws_vpc_security_group_ingress_rule" "three-tier-private-subnet-ingres
   ip_protocol                  = "tcp"
   to_port                      = 5000
 }
+
+resource "aws_vpc_security_group_ingress_rule" "three-tier-private-subnet-ingress-ssh" {
+  security_group_id            = aws_security_group.three-tier-private-subnet.id
+  referenced_security_group_id = aws_security_group.three-tier-public-subnet.id
+  from_port                    = 22
+  ip_protocol                  = "tcp"
+  to_port                      = 22
+}
+
 
 resource "aws_vpc_security_group_egress_rule" "three-tier-private-subnet-egress" {
   security_group_id = aws_security_group.three-tier-private-subnet.id

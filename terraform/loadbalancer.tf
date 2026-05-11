@@ -3,7 +3,7 @@ resource "aws_lb" "three-tier-internet-alb" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.three-tier-internet-alb.id]
-  subnets            = [aws_subnet.three-tier-web-public-subnet-1.id]
+  subnets            = [aws_subnet.three-tier-web-public-subnet-1.id, aws_subnet.three-tier-web-public-subnet-2.id]
 
   tags = {
     name = "three-tier-internet-alb"
@@ -12,7 +12,7 @@ resource "aws_lb" "three-tier-internet-alb" {
 
 resource "aws_lb_target_group" "three-tier-internet-lb-tg" {
   name     = "three-tier-internet-lb-tg"
-  port     = 80
+  port     = "80"
   protocol = "HTTP"
   vpc_id   = aws_vpc.three-tier-vpc.id
 }
@@ -28,13 +28,22 @@ resource "aws_lb_listener" "front_end" {
   }
 }
 
+resource "aws_lb_target_group_attachment" "three-tier-web-target-group-attachment" {
+  target_group_arn = aws_lb_target_group.three-tier-internet-lb-tg.arn
+  target_id        = aws_instance.three-tier-web-server.id
+  port             = 80
+}
+
+
 resource "aws_lb" "three-tier-internal-alb" {
   name               = "three-tier-internal-alb"
   internal           = true
   load_balancer_type = "application"
   security_groups    = [aws_security_group.three-tier-internal-alb.id]
-  subnets            = [aws_subnet.three-tier-app-private-subnet-1.id]
-
+  subnets = [
+    aws_subnet.three-tier-app-private-subnet-1.id,
+    aws_subnet.three-tier-app-private-subnet-2.id
+  ]
   tags = {
     name = "three-tier-internet-alb"
   }
@@ -49,7 +58,7 @@ resource "aws_lb_target_group" "three-tier-internal-lb-tg" {
 
 resource "aws_lb_listener" "back_end" {
   load_balancer_arn = aws_lb.three-tier-internal-alb.arn
-  port              = "5000"
+  port              = "80"
   protocol          = "HTTP"
 
   default_action {
@@ -58,3 +67,9 @@ resource "aws_lb_listener" "back_end" {
   }
 }
  
+
+resource "aws_lb_target_group_attachment" "three-tier-app-target-group-attachment" {
+  target_group_arn = aws_lb_target_group.three-tier-internal-lb-tg.arn
+  target_id        = aws_instance.three-tier-app-server.id
+  port             = 5000
+}

@@ -1,56 +1,102 @@
-pipeline{
-    agent any 
-    stages{
-        stage('Checkout'){
+pipeline {
+
+    agent any
+
+    environment {
+
+        BACKEND_IMAGE = "dhusinth123/flaskapp:latest"
+        FRONTEND_IMAGE = "dhusinth123/frontend:latest"
+    }
+
+    stages {
+
+        stage('Checkout Code') {
+
             steps {
-                git branch: 'main', url: 'https://github.com/Dhusinth/Project2-Three-Tier-AWS.git'
+
+                git branch: 'main',
+                url: 'https://github.com/Dhusinth/Project2-Three-Tier-AWS.git'
             }
         }
 
-        stage('Docker Build'){
-            steps{
-                sh 'docker build -t dhusinth123/flaskapp:latest . || true'
-            }
-        }
+        stage('Build & Push Docker Images') {
 
-        stage('Docker Push'){
-            steps{
-                withCredentials([usernamePassword(credentialsId: 'my-login-id', 
-                                  usernameVariable: 'USER', 
-                                  passwordVariable: 'PASS')]) 
-                    {
-                        sh 'echo $PASS | docker login -u $USER --password-stdin'
-                        sh 'docker push dhusinth123/flaskapp:latest'
-                     }
-
-            }
-        }
-        stage('Terraform apply'){
-            steps{
-                sh 'cd terraform && terraform apply -auto-approve'
-            }
-        }
-
-        stage('Run Playbook') {
             steps {
+
+                script {
+
+                    docker.withRegistry(
+                        'https://index.docker.io/v1/',
+                        'dockerhub'
+                    ) {
+
+                        // Backend Image
+
+                        def backend = docker.build(
+                            "${BACKEND_IMAGE}",
+                            "./app"
+                        )
+
+                        backend.push()
+
+                        // Frontend Image
+
+                        def frontend = docker.build(
+                            "${FRONTEND_IMAGE}",
+                            "./frontend"
+                        )
+
+                        frontend.push()
+                    }
+                }
+            }
+        }
+
+        stage('Deploy Backend') {
+
+            steps {
+
                 ansiblePlaybook(
-                    playbook: 'deploy.yml',
-                    inventory: 'hosts.ini',
-                    credentialsId: '01',
-                    colorized: true,
+
+                    playbook: 'ansible/deploy-backend.yml',
+
+                    inventory: 'ansible/hosts.ini',
+
+                    credentialsId: 'ubuntu',
+
                     disableHostKeyChecking: true
                 )
             }
         }
 
-        stage('Deploy') {
-            steps{
-                sh 'docker rm -f flaskapp || true'
-                sh 'docker run -d -p 5000:5000 --name flaskapp dhusinth123/flaskapp:latest'
+        stage('Deploy Frontend') {
+
+            steps {
+
+                ansiblePlaybook(
+
+                    playbook: 'ansible/deploy-frontend.yml',
+
+                    inventory: 'ansible/hosts.ini',
+
+                    credentialsId: 'ubuntu',
+
+                    disableHostKeyChecking: true
+                )
             }
         }
+    }
 
+    post {
 
+        success {
 
+            echo 'Application Deployed Successfully!'
+        }
+
+        failure {
+
+            echo 'Deployment Failed!'
+        }
     }
 }

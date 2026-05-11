@@ -1,0 +1,25 @@
+---
+- name: Deploy Frontend Container
+  hosts: webservers
+  become: yes
+
+  tasks:
+
+    - name: Pull latest frontend image
+      docker_image:
+        name: dhusinth123/frontend:latest
+        source: pull
+
+    - name: Remove old frontend container
+      docker_container:
+        name: frontend
+        state: absent
+
+    - name: Run frontend container
+      docker_container:
+        name: frontend
+        image: dhusinth123/frontend:latest
+        state: started
+        restart_policy: always
+        published_ports:
+          - "80:80"

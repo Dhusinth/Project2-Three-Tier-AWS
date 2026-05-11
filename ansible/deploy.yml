@@ -1,0 +1,22 @@
+---
+- name: Install and Start Nginx
+  hosts: webservers
+  become: yes
+  tasks:
+    - name: Ensure Nginx is installed
+      apt:
+        name: nginx
+        state: latest
+        update_cache: yes
+
+    - name: copy nginx
+      ansible.builtin.copy:
+        src: ./nginx/nginx.conf
+        dest: /etc/nginx/conf.d/default.conf 
+        mode: '0777'
+
+    - name: Ensure Nginx is running and enabled
+      systemd:
+        name: nginx
+        state: started
+        enabled: yes

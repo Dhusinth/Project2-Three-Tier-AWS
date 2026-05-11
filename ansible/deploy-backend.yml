@@ -1,0 +1,25 @@
+---
+- name: Deploy Backend Container
+  hosts: appservers
+  become: yes
+
+  tasks:
+
+    - name: Pull latest backend image
+      docker_image:
+        name: dhusinth123/flaskapp:latest
+        source: pull
+
+    - name: Remove old backend container
+      docker_container:
+        name: flaskapp
+        state: absent
+
+    - name: Run backend container
+      docker_container:
+        name: flaskapp
+        image: dhusinth123/flaskapp:latest
+        state: started
+        restart_policy: always
+        published_ports:
+          - "5000:5000"

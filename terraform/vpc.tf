@@ -29,11 +29,23 @@ resource "aws_route_table" "three-tier-public-route-table" {
 }
 
 resource "aws_subnet" "three-tier-web-public-subnet-1" {
-  vpc_id     = aws_vpc.three-tier-vpc.id
-  cidr_block = "10.0.1.0/24"
+  vpc_id                  = aws_vpc.three-tier-vpc.id
+  cidr_block              = "10.0.1.0/24"
+  availability_zone       = "ap-south-1a"
+  map_public_ip_on_launch = true
 
   tags = {
     Name = "three-tier-web-public-subnet-1"
+  }
+}
+
+resource "aws_subnet" "three-tier-web-public-subnet-2" {
+  vpc_id                  = aws_vpc.three-tier-vpc.id
+  cidr_block              = "10.0.5.0/24"
+  availability_zone       = "ap-south-1b"
+  map_public_ip_on_launch = true
+  tags = {
+    Name = "three-tier-web-public-subnet-2"
   }
 }
 
@@ -43,8 +55,9 @@ resource "aws_route_table_association" "three-tier-public-route-table-associatio
 }
 
 resource "aws_subnet" "three-tier-app-private-subnet-1" {
-  vpc_id     = aws_vpc.three-tier-vpc.id
-  cidr_block = "10.0.2.0/24"
+  vpc_id            = aws_vpc.three-tier-vpc.id
+  cidr_block        = "10.0.2.0/24"
+  availability_zone = "ap-south-1a"
 
   tags = {
     Name = "three-tier-app-private-subnet-1"
@@ -79,22 +92,31 @@ resource "aws_route_table" "three-tier-private-route-table" {
 resource "aws_route_table_association" "three-tier-privat-route-table-association-1" {
   subnet_id      = aws_subnet.three-tier-app-private-subnet-1.id
   route_table_id = aws_route_table.three-tier-private-route-table.id
+
 }
 
+resource "aws_subnet" "three-tier-app-private-subnet-2" {
+  vpc_id            = aws_vpc.three-tier-vpc.id
+  cidr_block        = "10.0.6.0/24"
+  availability_zone = "ap-south-1b"
+  tags = {
+    Name = "three-tier-app-private-subnet-2"
+  }
+}
 
 resource "aws_subnet" "three-tier-db-private-subnet-1" {
-  vpc_id     = aws_vpc.three-tier-vpc.id
-  cidr_block = "10.0.3.0/24"
-
+  vpc_id            = aws_vpc.three-tier-vpc.id
+  cidr_block        = "10.0.3.0/24"
+  availability_zone = "ap-south-1a"
   tags = {
     Name = "three-tier-db-private-subnet-1"
   }
 }
 
 resource "aws_subnet" "three-tier-db-private-subnet-2" {
-  vpc_id     = aws_vpc.three-tier-vpc.id
-  cidr_block = "10.0.4.0/24"
-
+  vpc_id            = aws_vpc.three-tier-vpc.id
+  cidr_block        = "10.0.4.0/24"
+  availability_zone = "ap-south-1b" # different AZ!
   tags = {
     Name = "three-tier-db-private-subnet-2"
   }
@@ -107,4 +129,6 @@ resource "aws_eip" "three-tier-eip" {
     Name = "three-tier-nat-eip"
   }
 }
+
+
 
