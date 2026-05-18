@@ -24,7 +24,7 @@ pipeline {
                     docker.withRegistry('', DOCKERHUB_CREDENTIALS) {
 
                         sh '''
-                            docker build -t dhusinth123/flaskapp:latest ./app
+                            docker build --no-cache -t dhusinth123/flaskapp:latest ./app
                             docker push dhusinth123/flaskapp:latest
                         '''
                     }
@@ -40,7 +40,7 @@ pipeline {
                     docker.withRegistry('', DOCKERHUB_CREDENTIALS) {
 
                         sh '''
-                            docker build -t dhusinth123/frontend:latest ./frontend
+                            docker build --no-cache -t dhusinth123/frontend:latest ./frontend
                             docker push dhusinth123/frontend:latest
                         '''
                     }
