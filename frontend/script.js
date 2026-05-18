@@ -1,18 +1,38 @@
-async function checkHealth() {
+async function checkServices() {
 
-    const result = document.getElementById("result");
+    const backendStatus = document.getElementById("backend-status");
+
+    const dbStatus = document.getElementById("db-status");
 
     try {
 
-        const response = await fetch("/api/health");
+        const backendResponse = await fetch("/api/health");
 
-        const data = await response.json();
+        const backendData = await backendResponse.json();
 
-        result.innerText = "Backend Status: " + data.status;
+        backendStatus.innerText =
+            "Status: " + backendData.status;
 
     } catch (error) {
 
-        result.innerText = "Backend connection failed";
+        backendStatus.innerText = "Backend Unreachable";
+    }
 
+    try {
+
+        const dbResponse = await fetch("/api/db-check");
+
+        const dbData = await dbResponse.json();
+
+        dbStatus.innerText =
+            "Database: " + dbData.database;
+
+    } catch (error) {
+
+        dbStatus.innerText = "Database Connection Failed";
     }
 }
+
+checkServices();
+
+setInterval(checkServices, 10000);
