@@ -5,6 +5,21 @@ resource "aws_instance" "three-tier-web-server" {
   associate_public_ip_address = true
   key_name                    = "LaptopKey"
   vpc_security_group_ids      = [aws_security_group.three-tier-public-subnet.id]
+  user_data                   = <<-EOF
+
+#!/bin/bash
+
+apt update -y
+
+apt install docker.io -y
+
+systemctl start docker
+
+systemctl enable docker
+
+usermod -aG docker ubuntu
+
+EOF
 
   tags = {
     Name = "three-tier-web-server"
@@ -18,6 +33,21 @@ resource "aws_instance" "three-tier-app-server" {
   associate_public_ip_address = false
   key_name                    = "LaptopKey"
   vpc_security_group_ids      = [aws_security_group.three-tier-private-subnet.id]
+  user_data                   = <<-EOF
+
+#!/bin/bash
+
+apt update -y
+
+apt install docker.io -y
+
+systemctl start docker
+
+systemctl enable docker
+
+usermod -aG docker ubuntu
+
+EOF
 
   tags = {
     Name = "three-tier-app-server"
