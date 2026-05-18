@@ -54,6 +54,11 @@ resource "aws_route_table_association" "three-tier-public-route-table-associatio
   route_table_id = aws_route_table.three-tier-public-route-table.id
 }
 
+resource "aws_route_table_association" "three-tier-public-route-table-association-2" {
+  subnet_id      = aws_subnet.three-tier-web-public-subnet-2.id
+  route_table_id = aws_route_table.three-tier-public-route-table.id
+}
+
 resource "aws_subnet" "three-tier-app-private-subnet-1" {
   vpc_id            = aws_vpc.three-tier-vpc.id
   cidr_block        = "10.0.2.0/24"
@@ -92,7 +97,10 @@ resource "aws_route_table" "three-tier-private-route-table" {
 resource "aws_route_table_association" "three-tier-privat-route-table-association-1" {
   subnet_id      = aws_subnet.three-tier-app-private-subnet-1.id
   route_table_id = aws_route_table.three-tier-private-route-table.id
-
+}
+resource "aws_route_table_association" "three-tier-privat-route-table-association-2" {
+  subnet_id      = aws_subnet.three-tier-app-private-subnet-2.id
+  route_table_id = aws_route_table.three-tier-private-route-table.id
 }
 
 resource "aws_subnet" "three-tier-app-private-subnet-2" {
