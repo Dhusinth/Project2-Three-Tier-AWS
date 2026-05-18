@@ -7,19 +7,26 @@
 
     - name: Pull latest backend image
       docker_image:
-        name: dhusinth123/flaskapp
+        name: "dhusinth123/flaskapp:{{ lookup('env','BUILD_NUMBER') }}"
         source: pull
 
     - name: Remove old backend container
       docker_container:
-        name: flaskapp
+        name: backend
         state: absent
 
     - name: Run backend container
       docker_container:
-        name: flaskapp
-        image: dhusinth123/flaskapp:{{ lookup('env','BUILD_NUMBER') }}
+        name: backend
+        image: "dhusinth123/flaskapp:{{ lookup('env','BUILD_NUMBER') }}"
         state: started
         restart_policy: always
+
         published_ports:
           - "5000:5000"
+
+        env:
+          MYSQL_HOST: "{{ lookup('env','MYSQL_HOST') }}"
+          MYSQL_USER: "{{ lookup('env','MYSQL_USER') }}"
+          MYSQL_PASSWORD: "{{ lookup('env','MYSQL_PASSWORD') }}"
+          MYSQL_DATABASE: "{{ lookup('env','MYSQL_DATABASE') }}"

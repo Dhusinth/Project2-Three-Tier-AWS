@@ -50,14 +50,21 @@ pipeline {
 
         stage('Deploy Backend') {
             steps {
+                withCredentials([
+                    string(credentialsId: 'mysql-host', variable: 'MYSQL_HOST'),
+                    string(credentialsId: 'mysql-user', variable: 'MYSQL_USER'),
+                    string(credentialsId: 'mysql-password', variable: 'MYSQL_PASSWORD'),
+                    string(credentialsId: 'mysql-database', variable: 'MYSQL_DATABASE')
+                ]) {
 
-                sshagent(credentials: [SSH_CREDENTIALS]) {
+                    sshagent(credentials: [SSH_CREDENTIALS]) {
 
-                    sh '''
-                        ansible-playbook \
-                        -i ansible/hosts.ini \
-                        ansible/deploy-backend.yml
-                    '''
+                        sh '''
+                            ansible-playbook \
+                            -i ansible/hosts.ini \
+                            ansible/deploy-backend.yml
+                        '''
+                    }
                 }
             }
         }
