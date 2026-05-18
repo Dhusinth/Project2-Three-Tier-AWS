@@ -3,86 +3,76 @@ pipeline {
     agent any
 
     environment {
-
-        BACKEND_IMAGE = "dhusinth123/flaskapp:latest"
-        FRONTEND_IMAGE = "dhusinth123/frontend:latest"
+        DOCKERHUB_CREDENTIALS = 'dockerhub'
+        SSH_CREDENTIALS       = 'ubuntu'
     }
 
     stages {
 
         stage('Checkout Code') {
-
             steps {
-
                 git branch: 'main',
                 url: 'https://github.com/Dhusinth/Project2-Three-Tier-AWS.git'
             }
         }
 
-        stage('Build & Push Docker Images') {
-
+        stage('Build & Push Backend Image') {
             steps {
 
                 script {
 
-                    docker.withRegistry(
-                        'https://index.docker.io/v1/',
-                        'dockerhub'
-                    ) {
+                    docker.withRegistry('', DOCKERHUB_CREDENTIALS) {
 
-                        // Backend Image
+                        sh '''
+                            docker build -t dhusinth123/flaskapp:latest ./app
+                            docker push dhusinth123/flaskapp:latest
+                        '''
+                    }
+                }
+            }
+        }
 
-                        def backend = docker.build(
-                            "${BACKEND_IMAGE}",
-                            "./app"
-                        )
+        stage('Build & Push Frontend Image') {
+            steps {
 
-                        backend.push()
+                script {
 
-                        // Frontend Image
+                    docker.withRegistry('', DOCKERHUB_CREDENTIALS) {
 
-                        def frontend = docker.build(
-                            "${FRONTEND_IMAGE}",
-                            "./frontend"
-                        )
-
-                        frontend.push()
+                        sh '''
+                            docker build -t dhusinth123/frontend:latest ./frontend
+                            docker push dhusinth123/frontend:latest
+                        '''
                     }
                 }
             }
         }
 
         stage('Deploy Backend') {
-
             steps {
 
-                ansiblePlaybook(
+                sshagent(credentials: [SSH_CREDENTIALS]) {
 
-                    playbook: 'ansible/deploy-backend.yml',
-
-                    inventory: 'ansible/hosts.ini',
-
-                    credentialsId: 'ubuntu',
-
-                    disableHostKeyChecking: true
-                )
+                    sh '''
+                        ansible-playbook \
+                        -i ansible/hosts.ini \
+                        ansible/deploy-backend.yml
+                    '''
+                }
             }
         }
 
         stage('Deploy Frontend') {
-
             steps {
 
-                ansiblePlaybook(
+                sshagent(credentials: [SSH_CREDENTIALS]) {
 
-                    playbook: 'ansible/deploy-frontend.yml',
-
-                    inventory: 'ansible/hosts.ini',
-
-                    credentialsId: 'ubuntu',
-
-                    disableHostKeyChecking: true
-                )
+                    sh '''
+                        ansible-playbook \
+                        -i ansible/hosts.ini \
+                        ansible/deploy-frontend.yml
+                    '''
+                }
             }
         }
     }
@@ -90,12 +80,10 @@ pipeline {
     post {
 
         success {
-
-            echo 'Application Deployed Successfully!'
+            echo 'Deployment Successful!'
         }
 
         failure {
-
             echo 'Deployment Failed!'
         }
     }
