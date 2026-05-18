@@ -66,7 +66,7 @@ resource "aws_lb_listener" "back_end" {
     target_group_arn = aws_lb_target_group.three-tier-internal-lb-tg.arn
   }
 }
- 
+
 
 resource "aws_lb_target_group_attachment" "three-tier-app-target-group-attachment" {
   target_group_arn = aws_lb_target_group.three-tier-internal-lb-tg.arn
