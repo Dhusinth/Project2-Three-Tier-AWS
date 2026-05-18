@@ -7,7 +7,7 @@
 
     - name: Pull latest frontend image
       docker_image:
-        name: dhusinth123/frontend:latest
+        name: dhusinth123/frontend
         source: pull
 
     - name: Remove old frontend container
@@ -18,7 +18,7 @@
     - name: Run frontend container
       docker_container:
         name: frontend
-        image: dhusinth123/frontend:latest
+        image: dhusinth123/frontend:{{ lookup('env','BUILD_NUMBER') }}
         state: started
         restart_policy: always
         published_ports:

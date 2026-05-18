@@ -7,7 +7,7 @@
 
     - name: Pull latest backend image
       docker_image:
-        name: dhusinth123/flaskapp:latest
+        name: dhusinth123/flaskapp
         source: pull
 
     - name: Remove old backend container
@@ -18,7 +18,7 @@
     - name: Run backend container
       docker_container:
         name: flaskapp
-        image: dhusinth123/flaskapp:latest
+        image: dhusinth123/flaskapp:{{ lookup('env','BUILD_NUMBER') }}
         state: started
         restart_policy: always
         published_ports:
