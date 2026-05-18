@@ -1,6 +1,6 @@
 ---
 - name: Deploy Frontend Container
-  hosts: webservers
+  hosts: web
   become: yes
 
   tasks:

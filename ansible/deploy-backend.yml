@@ -1,6 +1,6 @@
 ---
 - name: Deploy Backend Container
-  hosts: appservers
+  hosts: app
   become: yes
 
   tasks:
